@@ -1,103 +1,87 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+
+export default function Page() {
+  const [routine, setRoutine] = useState([]);
+  const [intervals, setIntervals] = useState(10);
+
+
+  const transitionMatrix = {
+    "Slow Jog": { "Slow Jog": 0.1, "Tempo": 0.5, "Sprint": 0.3, "Rest": 0.1 },
+    "Tempo": { "Slow Jog": 0.4, "Tempo": 0.2, "Sprint": 0.1, "Rest": 0.3 },
+    "Sprint": { "Slow Jog": 0.4, "Tempo": 0.1, "Sprint": 0.1, "Rest": 0.4 },
+    "Rest": { "Slow Jog": 0.3, "Tempo": 0.3, "Sprint": 0.3, "Rest": 0.1 },
+  };
+
+  const runningState = Object.keys(transitionMatrix);
+
+  function getNextDance(currentRun) {
+    const probs = transitionMatrix[currentRun];
+    const rand = Math.random(); //random number generated between 0 and 1
+    let cumulative = 0;
+    for (const state of runningState) { //iterate through probabilities until we pass random unmber generated
+      cumulative += probs[state];
+      if (rand <= cumulative){
+        return state;
+      }
+    }
+  }
+
+  function generateRoutine(routineLength=10) {    
+    const result = [];
+    let current = "Slow Jog";
+    for (let i = 0; i < routineLength; i++) {
+      result.push(current);
+      current = getNextDance(current);
+    }
+    setRoutine(result);
+  }
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
+    <main className="flex flex-col items-center min-h-screen p-6 bg-blue-100">
+      <h1 className="text-3xl font-bold mb-6">Markov Fartlek Generator</h1>
+      <label className="mb-4">
+        Number of Intervals:{" "}
+        <input
+          type="number"
+          value={intervals}
+          onChange={(e) => setIntervals(Number(e.target.value))}
+          className="border rounded px-2 py-1 w-16 text-center"
+          min={1}
+          max={50}
         />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+      </label>
+      <button
+        onClick={() => generateRoutine(intervals)}
+        className="px-4 py-2 bg-blue-500 text-white rounded-xl shadow hover:bg-blue-600 transition cursor-pointer"
+      >
+        Generate Workout
+      </button>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {routine.length > 0 && (
+        <div className="grid grid-cols-5 gap-6 w-full max-w-4xl mt-10">
+          {routine.map((runningState, i) => (
+            <div
+              key={i}
+              className={`flex flex-col items-center justify-center text-center rounded-2xl shadow-lg font-bold text-lg p-6 min-h-[100px]
+                ${
+                  runningState === "Slow Jog"
+                    ? "bg-green-300"
+                    : runningState === "Tempo"
+                    ? "bg-yellow-300"
+                    : runningState === "Sprint"
+                    ? "bg-red-300"
+                    : "bg-blue-300"
+                }`}
+            >
+              <span className="text-2xl">{i + 1}</span>
+              <span>{runningState}</span>
+            </div>
+          ))}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      )}
+
+    </main>
   );
 }
