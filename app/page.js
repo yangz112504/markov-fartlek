@@ -16,12 +16,12 @@ export default function Page() {
 
   const runningState = Object.keys(transitionMatrix);
 
-  function getNextDance(currentRun) {
-    const probs = transitionMatrix[currentRun];
+  function getNextRoutine(currentRun) {
+    const probabilitiesDict = transitionMatrix[currentRun];
     const rand = Math.random(); //random number generated between 0 and 1
     let cumulative = 0;
-    for (const state of runningState) { //iterate through probabilities until we pass random unmber generated
-      cumulative += probs[state];
+    for (const state of runningState) { //iterate through probabilities until we pass random number generated
+      cumulative += probabilitiesDict[state];
       if (rand <= cumulative){
         return state;
       }
@@ -33,7 +33,7 @@ export default function Page() {
     let current = "Slow Jog";
     for (let i = 0; i < routineLength; i++) {
       result.push(current);
-      current = getNextDance(current);
+      current = getNextRoutine(current);
     }
     setRoutine(result);
   }
